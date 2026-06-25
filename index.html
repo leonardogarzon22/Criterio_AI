@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criterio V.1.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        body { font-family: 'Inter', sans-serif; }
+        .font-code { font-family: 'JetBrains Mono', monospace; }
+
+        .code-line { transition: all 0.1s ease-in-out; }
+        .code-line:hover { 
+            background-color: #475569 !important; 
+            border-left-color: #1e293b !important; 
+        }
+        .code-line:hover pre,
+        .code-line:hover .line-number { color: #ffffff !important; }
+
+        .line-number { 
+            color: #94a3b8; 
+            min-width: 2.5rem;
+            text-align: right;
+            padding-right: 1rem;
+            user-select: none;
+            transition: color 0.1s;
+        }
+
+        .comment-card {
+            animation: slideUpSlight 0.3s ease-out forwards;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+        }
+
+        @keyframes slideUpSlight {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased selection:bg-indigo-100 selection:text-indigo-900 min-h-screen pb-12">
+
+    <div class="container mx-auto pt-10 px-4 sm:px-6 max-w-[1400px]">
+        
+        <header class="mb-8 bg-white border border-slate-300 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-semibold tracking-tight text-slate-900">
+                    Criterio<span class="text-rose-500">.</span>
+                </h1>
+                <p class="text-slate-500 text-sm mt-1">Motor de auditoría AppSec</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="relative flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                </span>
+                <span class="text-xs text-slate-500 font-code font-medium uppercase tracking-wider">
+                    OWASP Top 10 Activo
+                </span>
+            </div>
+        </header>
+
+        <div class="bg-white border border-slate-300 rounded-2xl p-6 shadow-sm mb-8 flex flex-col md:flex-row items-center justify-between gap-6 transition-all hover:border-slate-400 hover:shadow-md">
+            <div class="w-full md:w-auto flex-1">
+                <label class="block text-[11px] uppercase tracking-wider font-bold text-slate-500 mb-3">Archivo a Evaluar (.py, .js, .ts, .html, .php)</label>
+                <div class="relative">
+                    <input type="file" id="codeFile" accept=".py,.js,.jsx,.ts,.tsx,.html,.php" class="block w-full text-sm text-slate-600 
+                    file:mr-4 file:py-2.5 file:px-5 file:rounded-lg file:border-0 
+                    file:text-sm file:font-medium file:bg-slate-100 file:text-slate-700 
+                    hover:file:bg-slate-200 hover:file:text-slate-900 cursor-pointer 
+                    border border-slate-300 rounded-lg p-1 bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300">
+                </div>
+            </div>
+            <button onclick="enviarAAnalizar()" id="btnAnalyze" class="w-full md:w-auto bg-slate-900 hover:bg-slate-800 text-white font-medium py-3.5 px-8 rounded-xl text-sm shadow-sm transition-all duration-200 transform hover:-translate-y-0.5 whitespace-nowrap">
+                Ejecutar Análisis
+            </button>
+        </div>
+
+        <div id="loader" class="hidden text-center py-24 bg-white border border-slate-300 rounded-2xl shadow-sm mb-8">
+            <div class="inline-block w-8 h-8 border-2 border-slate-200 border-t-slate-800 rounded-full animate-spin mb-4"></div>
+            <p class="text-slate-500 text-sm font-medium">Ejecutando escáner heurístico y heurística IA...</p>
+        </div>
+
+        <div id="workspace" class="hidden grid grid-cols-1 xl:grid-cols-3 gap-6">
+            
+            <div class="xl:col-span-2 bg-white rounded-2xl border border-slate-300 shadow-sm flex flex-col overflow-hidden">
+                <div class="bg-slate-50 border-b border-slate-300 px-6 py-3 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <span class="font-code text-sm font-medium text-slate-700" id="fileNameTitle">documento.py</span>
+                    </div>
+                </div>
+                <div id="codeContainer" class="font-code text-[13px] leading-relaxed overflow-x-auto py-6 bg-white w-full h-full"></div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-white border border-slate-300 p-6 rounded-2xl shadow-sm">
+                    <h3 class="text-[11px] uppercase tracking-wider font-bold text-slate-500 mb-4">Diagnóstico General</h3>
+                    <p id="auditoriaResumen" class="text-sm text-slate-600 leading-relaxed"></p>
+                    
+                    <div class="mt-5 pt-4 border-t border-slate-200 flex justify-between items-center">
+                        <span class="text-xs text-slate-600 font-medium">Fallas Duras (SAST):</span>
+                        <span id="sastCount" class="font-code text-sm font-bold text-slate-900 bg-slate-100 border border-slate-200 px-3 py-1 rounded-md">0</span>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-300 p-6 rounded-2xl shadow-sm">
+                    <h3 class="text-[11px] uppercase tracking-wider font-bold text-rose-600 mb-4 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        Vectores de Explotación
+                    </h3>
+                    <div id="hackerContainer" class="space-y-4"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        async function enviarAAnalizar() {
+            const fileInput = document.getElementById('codeFile');
+            if (fileInput.files.length === 0) {
+                alert('Por favor, selecciona un archivo.');
+                return;
+            }
+
+            const loader = document.getElementById('loader');
+            const workspace = document.getElementById('workspace');
+            const btn = document.getElementById('btnAnalyze');
+
+            loader.classList.remove('hidden');
+            workspace.classList.add('hidden');
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 300000);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/analyze', {
+                    method: 'POST',
+                    body: formData,
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                const data = await response.json();
+                if (response.ok && data.status === 'success') {
+                    renderizarInterfaz(data);
+                } else {
+                    alert(`Error del Servidor: ${data.detail || 'Fallo en el análisis.'}`);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Servidor no disponible en el puerto 8000. Asegúrate de tener FastAPI corriendo.');
+
+                if (error.name === 'AbortError') {
+                    alert('El análisis superó el tiempo máximo de espera (5 minutos). La IA de Groq está limitando las peticiones. Te sugiero cambiar a un modelo más ligero en tu backend.');
+                } else {
+                    alert('Servidor no disponible en el puerto 8000. Asegúrate de tener FastAPI corriendo.');
+                }
+                
+            } finally {
+                loader.classList.add('hidden');
+                btn.disabled = false;
+            }
+        }
+
+        function renderizarInterfaz(data) {
+            document.getElementById('workspace').classList.remove('hidden');
+            document.getElementById('fileNameTitle').innerText = data.archivo;
+            document.getElementById('auditoriaResumen').innerText = data.auditoria.resumen;
+            document.getElementById('sastCount').innerText = data.hallazgos_sast_puros;
+
+            const mapaHallazgos = {};
+            data.auditoria.hallazgos.forEach(h => {
+                if (h.estado === 'Inseguro') {
+                    mapaHallazgos[h.linea_inicio] = h;
+                }
+            });
+
+            const mapaParches = {};
+            data.parches.parches.forEach(p => {
+                mapaParches[p.linea_remplazo] = p;
+            });
+
+            const lineas = data.codigo_original.split('\n');
+            const codeContainer = document.getElementById('codeContainer');
+            codeContainer.innerHTML = ''; 
+
+            lineas.forEach((textoLinea, index) => {
+                const numeroLinea = index + 1;
+
+                const divLinea = document.createElement('div');
+                
+                if (mapaHallazgos[numeroLinea]) {
+                    divLinea.className = "code-line flex items-center py-0.5 group w-full bg-rose-50 border-l-4 border-rose-500 text-rose-900";
+                } else {
+                    divLinea.className = "code-line flex items-center py-0.5 group w-full border-l-4 border-transparent text-slate-700";
+                }
+
+                divLinea.innerHTML = `
+                    <span class="line-number font-code text-[11px] transition-colors">${numeroLinea}</span>
+                    <pre class="whitespace-pre-wrap font-code tracking-tight flex-1 pl-2 m-0 transition-colors">${escapeHTML(textoLinea)}</pre>
+                `;
+                codeContainer.appendChild(divLinea);
+
+                if (mapaHallazgos[numeroLinea]) {
+                    const hallazgo = mapaHallazgos[numeroLinea];
+                    const parche = mapaParches[numeroLinea] || null;
+
+                    const divComentario = document.createElement('div');
+                    divComentario.className = "comment-card my-4 ml-[4.5rem] mr-6 bg-white border border-slate-300 border-l-4 border-l-rose-500 rounded-xl overflow-hidden";
+                    
+                    let htmlComentario = `
+                        <div class="p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-rose-600 font-bold tracking-wide uppercase text-[10px] bg-rose-50 px-2 py-1 rounded border border-rose-200 shadow-sm">${hallazgo.categoria_owasp || 'Vulnerabilidad'}</span>
+                                <span class="text-[10px] font-code text-slate-600 border border-slate-200 bg-slate-50 px-2 py-0.5 rounded-md shadow-sm">${hallazgo.endpoint}</span>
+                            </div>
+                            <div class="space-y-2">
+                                <p class="text-sm text-slate-800 font-medium leading-relaxed">${hallazgo.descripcion}</p>
+                                <p class="text-sm text-slate-600 leading-relaxed"><span class="font-semibold text-slate-800">Recomendación:</span> ${hallazgo.recomendacion}</p>
+                            </div>
+                        </div>
+                    `;
+
+                    if (parche) {
+                        htmlComentario += `
+                            <div class="bg-slate-50 border-t border-slate-200 p-5">
+                                <div class="flex items-center gap-2 mb-3">
+                                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span class="text-slate-800 font-bold text-[11px] uppercase tracking-wider">Código Seguro Propuesto</span>
+                                </div>
+                                <pre class="bg-white border border-slate-300 rounded-lg p-4 text-emerald-800 font-code overflow-x-auto text-xs leading-relaxed shadow-sm">${escapeHTML(parche.codigo_corregido)}</pre>
+                            </div>
+                        `;
+                    }
+
+                    divComentario.innerHTML = htmlComentario;
+                    codeContainer.appendChild(divComentario);
+                }
+            });
+
+            const hackerContainer = document.getElementById('hackerContainer');
+            hackerContainer.innerHTML = '';
+            if (data.hacking.amenazas_detectadas && data.hacking.vectores.length > 0) {
+                data.hacking.vectores.forEach(v => {
+                    const divV = document.createElement('div');
+                    divV.className = "p-4 bg-white border border-slate-300 rounded-xl shadow-sm hover:border-slate-400 transition-colors";
+                    divV.innerHTML = `
+                        <div class="flex justify-between items-center text-[11px] font-code text-slate-600 font-medium mb-2">
+                            <span>${v.endpoint}</span>
+                            <span class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md border border-slate-200">Línea ${v.linea_objetivo}</span>
+                        </div>
+                        <p class="text-slate-800 text-[13px] leading-relaxed mb-3">${v.vector}</p>
+                        <div>
+                            <span class="text-[10px] text-slate-500 block mb-1.5 font-bold font-code uppercase tracking-wider">Payload (PoC):</span>
+                            <pre class="bg-slate-50 p-3 rounded-lg border border-slate-300 text-[11px] font-code text-amber-700 overflow-x-auto shadow-inner">${escapeHTML(v.payload_poc)}</pre>
+                        </div>
+                    `;
+                    hackerContainer.appendChild(divV);
+                });
+            } else {
+                hackerContainer.innerHTML = '<p class="text-slate-500 text-sm italic text-center py-4 bg-slate-50 rounded-lg border border-slate-200">El agente no detectó vectores críticos explotables.</p>';
+            }
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
