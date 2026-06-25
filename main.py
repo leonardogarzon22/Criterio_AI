@@ -31,7 +31,7 @@ app = FastAPI(
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:5500,http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://criterioai.onrender.com"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -185,8 +185,10 @@ async def analyze_code(file: UploadFile = File(...)):
         if ext == ".py":
             try:
                 result = subprocess.run(
-                    ['bandit', '-r', ruta_temporal, '-f', 'json'],
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+                    ['bandit', '-r','--', ruta_temporal, '-f', 'json'],
+                    capture_output=True,
+                    text=True,
+                    check=False
                 )
                 if result.stdout:
                     try:
