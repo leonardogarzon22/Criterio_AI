@@ -28,10 +28,15 @@ app = FastAPI(
 )
 
 # Configuración de CORS segura
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:5500,http://localhost:5173").split(",")
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS", 
+    "https://criterioai.onrender.com,http://localhost:3000,http://127.0.0.1:5500,http://localhost:5173"
+).split(",")
+
+# 2. Pasamos la variable ALLOWED_ORIGINS directamente al middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://criterioai.onrender.com/"],
+    allow_origins=ALLOWED_ORIGINS, 
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
