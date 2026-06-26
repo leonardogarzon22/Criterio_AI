@@ -218,7 +218,7 @@ async def analyze_code(file: UploadFile = File(...)):
         with open(ruta_temporal, 'r', encoding='utf-8', errors='ignore') as f:
             codigo_fuente = f.read()
         
-        LIMITE_CARACTERES = 16000
+        LIMITE_CARACTERES = 30000
         if len(codigo_fuente) > LIMITE_CARACTERES:
             logger.warning(f"Archivo rechazado por tamaño: {len(codigo_fuente)} caracteres.")
             raise HTTPException(
