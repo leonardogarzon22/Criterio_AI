@@ -48,11 +48,11 @@ def cargar_y_validar_origenes_cors() -> list[str]:
                 origenes_verificados.append(origen_seguro)
             else:
                 logger.error(
-                    f"❌ [CORS MALCONFIGURADO]: El origen '{origen_limpio}' "
+                    f"[CORS MALCONFIGURADO]: El origen '{origen_limpio}' "
                     f"no es una URL base válida (ej: https://dominio.com). Fue ignorado por seguridad."
                 )
         except Exception:
-            logger.error(f"❌ [CORS ERROR]: No se pudo parsear el origen '{origen_limpio}'. Ignorado.")
+            logger.error(f"[CORS ERROR]: No se pudo parsear el origen '{origen_limpio}'. Ignorado.")
     if not origenes_verificados:
         logger.warning("⚠️ [CORS WARNING]: No se configuraron orígenes válidos. Usando 'http://localhost:3000' por defecto.")
         return ["http://localhost:3000"]
@@ -339,10 +339,10 @@ async def analyze_code(file: UploadFile = File(...)):
 
             if veredicto.parche_exitoso:
                 parche_aprobado = True
-                logger.info(f"✅ Veredicto: Parche Aprobado en el intento {intento_actual}.")
+                logger.info(f"Veredicto: Parche Aprobado en el intento {intento_actual}.")
             else:
                 historial_criticas = veredicto.critica
-                logger.warning(f"❌ Veredicto: Parche Rechazado. Razón: {historial_criticas}")
+                logger.warning(f" Veredicto: Parche Rechazado. Razón: {historial_criticas}")
 
         if not parche_aprobado:
             logger.error("Se agotaron los intentos. El parcheador no logró una solución válida.")
