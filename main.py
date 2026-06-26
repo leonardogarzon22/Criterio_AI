@@ -1,4 +1,5 @@
 import os
+import urllib.parse
 import json
 import logging
 import shutil
@@ -27,13 +28,39 @@ app = FastAPI(
     description="Motor profesional de auditoría de código con soporte políglota y análisis heurístico por IA."
 )
 
-# Configuración de CORS segura
-ALLOWED_ORIGINS = os.getenv(
-    "ALLOWED_ORIGINS", 
-    "https://criterioai.onrender.com,http://localhost:3000,http://127.0.0.1:5500,http://localhost:5173"
-)
+def cargar_y_validar_origenes_cors() -> list[str]:
+    cadena_origenes = os.getenv(
+        "ALLOWED_ORIGINS", 
+        "https://criterioai.onrender.com,http://localhost:3000,http://127.0.0.1:5500,http://localhost:5173"
+    )
+    
+    origenes_verificados = []
+    
+    for origen in cadena_origenes.split(","):
+        origen_limpio = origen.strip()
+        if not origen_limpio:
+            continue
 
-ALLOWED_ORIGINS = [origin.strip() for origin in cadena_origenes.split(",") if origin.strip()]
+        try:
+            url_parseada = urllib.parse.urlparse(origen_limpio)
+            if url_parseada.scheme in ["http", "https"] and url_parseada.netloc:
+                origen_seguro = f"{url_parseada.scheme}://{url_parseada.netloc}"
+                origenes_verificados.append(origen_seguro)
+            else:
+                logger.error(
+                    f"❌ [CORS MALCONFIGURADO]: El origen '{origen_limpio}' "
+                    f"no es una URL base válida (ej: https://dominio.com). Fue ignorado por seguridad."
+                )
+        except Exception:
+            logger.error(f"❌ [CORS ERROR]: No se pudo parsear el origen '{origen_limpio}'. Ignorado.")
+    if not origenes_verificados:
+        logger.warning("⚠️ [CORS WARNING]: No se configuraron orígenes válidos. Usando 'http://localhost:3000' por defecto.")
+        return ["http://localhost:3000"]
+        
+    return origenes_verificados
+
+# Configuración de CORS segura
+ALLOWED_ORIGINS = cargar_y_validar_origenes_cors()
 
 app.add_middleware(
     CORSMiddleware,
