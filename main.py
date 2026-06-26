@@ -5,10 +5,11 @@ import shutil
 import tempfile
 import subprocess
 from typing import List, Optional
-from fastapi import FastAPI, UploadFile, File, HTTPException, status
+from fastapi import FastAPI, UploadFile, File, HTTPException, status, Security
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
+from fastapi.security import APIKeyHeader
 
 # Componentes de LangChain
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -31,7 +32,9 @@ app = FastAPI(
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS", 
     "https://criterioai.onrender.com,http://localhost:3000,http://127.0.0.1:5500,http://localhost:5173"
-).split(",")
+)
+
+ALLOWED_ORIGINS = [origin.strip() for origin in cadena_origenes.split(",") if origin.strip()]
 
 # 2. Pasamos la variable ALLOWED_ORIGINS directamente al middleware
 app.add_middleware(
@@ -42,6 +45,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+API_KEY_NAME = "X-API-Key"
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=True)
+
+
+CRITERIO_SECRET_KEY = os.getenv("CRITERIO_SECRET_KEY")
+
+async def verificar_api_key(api_key_header: str = Security(api_key_header)):
+    if api_key_header != CRITERIO_SECRET_KEY:
+        logger.warning(f"Intento de acceso denegado con API Key: {api_key_header[:5]}...")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="API Key inválida o faltante. Acceso denegado."
+        )
+    return api_key_header
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 if not GOOGLE_API_KEY:
