@@ -11,7 +11,6 @@ from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 from fastapi.security import APIKeyHeader
 
-# Componentes de LangChain
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from langchain_core.prompts import ChatPromptTemplate
@@ -36,7 +35,6 @@ ALLOWED_ORIGINS = os.getenv(
 
 ALLOWED_ORIGINS = [origin.strip() for origin in cadena_origenes.split(",") if origin.strip()]
 
-# 2. Pasamos la variable ALLOWED_ORIGINS directamente al middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS, 
@@ -66,7 +64,7 @@ if not GOOGLE_API_KEY:
 
 llm = ChatGoogleGenerativeAI(
     model="gemini-3.1-flash-lite",
-    temperature=0.0,  # Mantenemos 0.0 para que sea analítico y determinista
+    temperature=0.0,
     google_api_key=GOOGLE_API_KEY
 )
 
@@ -117,7 +115,6 @@ def extraer_contexto_codigo(codigo: str, linea_centro: int, radio: int = 10) -> 
     lineas = codigo.split('\n')
     idx_centro = linea_centro - 1
     
-    # Calcular los límites asegurando que no nos salgamos del archivo
     inicio = max(0, idx_centro - radio)
     fin = min(len(lineas), idx_centro + radio + 1)
     
@@ -342,7 +339,6 @@ async def analyze_code(file: UploadFile = File(...)):
         )
         
     finally:
-        # Limpieza obligatoria del archivo temporal en el sistema de archivos
         if os.path.exists(ruta_temporal):
             os.remove(ruta_temporal)
             logger.info("Limpieza de archivos temporales completada de forma segura.")
