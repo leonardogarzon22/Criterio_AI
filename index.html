@@ -198,7 +198,7 @@
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
 
-            const API_KEY = "%%CRITERIO_API_KEY%%";
+            const API_KEY = "CRITERIO_SECRET_KEY";
 
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 300000);
