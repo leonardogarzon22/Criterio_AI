@@ -31,7 +31,7 @@ app = FastAPI(
 def cargar_y_validar_origenes_cors() -> list[str]:
     cadena_origenes = os.getenv(
         "ALLOWED_ORIGINS", 
-        "https://criterioai.onrender.com,http://localhost:3000,http://127.0.0.1:5500,http://localhost:5173"
+        "https://criterio-ai-00qc.onrender.com,http://localhost:3000,http://127.0.0.1:5500,http://localhost:5173"
     )
     
     origenes_verificados = []
